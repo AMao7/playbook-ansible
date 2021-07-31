@@ -1,0 +1,18 @@
+---
+#
+# Installing Metricbeat
+#
+
+# Install Metricbeat 
+
+- name: Install filebeat with apt
+  apt:
+   name: filebeat
+   update_cache: yes
+    
+# Starting Metricbeat
+
+- name: Starting Metricbeat
+  service:
+   name: filebeat
+   state: started

@@ -1,0 +1,105 @@
+---
+
+
+- name: check if file exists
+  stat: 
+    path: /etc/logstash/conf.d/nginx-01.conf
+  register: files_to_delete
+
+- name: removing file if exits
+  file:
+    path: /etc/logstash/conf.d/nginx-01.conf
+    state: absent
+  when: files_to_delete.stat.exists == True
+
+- name: Create new file for processing apache2 access log files
+  file:
+    path: /etc/logstash/conf.d/nginx-01.conf
+    state: touch
+    owner: root
+    group: root
+    mode: '0644'
+
+
+# # Insert data into nginx access log file
+# - name: Insert data into access log file
+#   blockinfile:
+#     path: /etc/logstash/conf.d/nginx-01.conf
+#     block: |
+#       input {
+#         file {
+#           type => "nginx"
+#           path => "/var/log/nginx/*"
+#           exclude => "*.gz"
+#         }
+#       }
+#       filter {
+#         if [type] == "nginx" {
+#           grok {
+#         patterns_dir => "/etc/logstash/patterns"
+#         match => { "message" => "%{NGINX_ACCESS}" }
+#         remove_tag => ["grokparsefailure"]
+#         add_tag => ["nginx_access"]
+#           }
+#           geoip {
+#             source => "clientip"
+#           }
+#       output {
+#         elasticsearch {
+#           hosts => ["localhost:9200"]    
+#         }
+#       }
+ 
+            
+- name: Update nginx conf file
+  blockinfile:
+    path: /etc/logstash/conf.d/nginx-01.conf
+    block: |
+      input {
+          beats {
+              host => "0.0.0.0"
+              port => 5400
+          }
+      }
+
+      filter {
+      grok {
+        match => [ "message" , "%{COMBINEDAPACHELOG}+%{GREEDYDATA:extra_fields}"]
+        overwrite => [ "message" ]
+      }
+      mutate {
+        convert => ["response", "integer"]
+        convert => ["bytes", "integer"]
+        convert => ["responsetime", "float"]
+      }
+      geoip {
+        source => "clientip"
+        target => "geoip"
+        add_tag => [ "nginx-geoip" ]
+      }
+      date {
+        match => [ "timestamp" , "dd/MMM/YYYY:HH:mm:ss Z" ]
+        remove_field => [ "timestamp" ]
+      }
+      useragent {
+        source => "agent"
+      }
+      }
+      output {
+        elasticsearch {
+          hosts => ["localhost:9200"]    
+        }
+      }
+
+- name: Update filebeat config
+  blockinfile:
+    path: /etc/filebeat/filebeat.yml
+    block: |
+      filebeat.prospectors:
+      - input_type: log
+        paths:
+          - /var/log/nginx/*.log
+        exclude_files: ['\.gz$']
+
+      output.logstash:
+        hosts: ["localhost:5400"]
