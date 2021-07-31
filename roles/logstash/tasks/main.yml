@@ -9,10 +9,10 @@
    name: logstash
    update_cache: yes
  
-   
-# Starting Kibana
 
 - name: Starting logstash
   service:
    name: logstash
    state: started
+
+

@@ -1,14 +1,11 @@
 ---
 
-- name: Restart elasticservice
-  service:
-    name: elasticsearch
-    state: restarted
 
 - name: Restart logstash
   service:
     name: logstash
     state: restarted
+
 
 - name: Restart kibana
   service:
@@ -20,5 +17,9 @@
     name: filebeat
     state: restarted
 
+- name: Restart elasticservice
+  service:
+    name: elasticsearch
+    state: restarted
 
 
