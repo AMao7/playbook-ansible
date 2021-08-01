@@ -7,3 +7,4 @@
 * Kibana
 * Filebeat (used to send parsed logs to logstash)
 * Nginx (contains the static site)
+* a python script that will ping the nginx enpoint for logs
