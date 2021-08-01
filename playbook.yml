@@ -13,5 +13,5 @@
   - { role: kibana }
   - { role: filebeat }
   - { role: nginx }
-    #- { role: config-changes }
+  - { role: config-changes }
   - { role: restart-services }
