@@ -1,7 +1,6 @@
 ---
-#
+
 # Installing Elasticsearch
-#
 
 # Add Elasticsearch apt key
 
@@ -16,7 +15,7 @@
     name: apt-transport-https
     state: present
 
-# Add the Elasticsearch apt repo. For versions 6 of the stack - use '6.x-prerelease':
+# Add Elasticsearch apt repo:
 
 - name: Adding Elasticsearch repo
   apt_repository:
@@ -28,7 +27,7 @@
    name: elasticsearch
    update_cache: yes
    
-# Update Elasticsearch config file to allow access (to secure Elasticsearch, bind to 'localhost'). 
+# Update Elasticsearch config file to allow access. 
 
 - name: Updating the config file to allow outside access
   lineinfile:
