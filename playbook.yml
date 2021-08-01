@@ -11,7 +11,7 @@
   - { role: elasticsearch }
   - { role: logstash }
   - { role: kibana }
-  - { role: metricbeat }
+  - { role: filebeat }
   - { role: nginx }
-    #- { role: nginx-data }
+  - { role: config-changes }
   - { role: restart-services }
