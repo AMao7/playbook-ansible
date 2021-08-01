@@ -4,14 +4,14 @@ import random
 
 def successful_ping():
     page = "http://localhost"
-    random_request = random.randint(1000, 10000)    
+    random_request = random.randint(10, 100)    
     for i in range(random_request):
         requests.get(page)
         time.sleep(1)
 
 def unsuccessful_ping():
-    page = "http://localhost:1"
-    random_request = random.randint(1000, 10000)    
+    page = "http://localhost/error!!!!!"
+    random_request = random.randint(10, 100)    
     for i in range(random_request):
         requests.get(page)
         time.sleep(1)

@@ -1,47 +1,50 @@
-- name: Update logstash conf file
+- name: Update nginx conf file
   blockinfile:
     path: /etc/logstash/conf.d/nginx-01.conf
     block: |
-      input {
-        beats {
-          port => 5044
-          host => "0.0.0.0"
+        input {
+          beats {
+            port => 5044
+            host => "0.0.0.0"
+          }
         }
-      }
 
-      filter {
-      grok {
-        match => [ "message" , "%{COMBINEDAPACHELOG}+%{GREEDYDATA:extra_fields}"]
-        overwrite => [ "message" ]
-      }
-      mutate {
-        convert => ["response", "integer"]
-        convert => ["bytes", "integer"]
-        convert => ["responsetime", "float"]
-      }
-      geoip {
-        source => "clientip"
-        target => "geoip"
-        add_tag => [ "nginx-geoip" ]
-      }
-      date {
-        match => [ "timestamp" , "dd/MMM/YYYY:HH:mm:ss Z" ]
-        remove_field => [ "timestamp" ]
-      }
-      useragent {
-        source => "agent"
-      }
-      }
-
-      output {
-        elasticsearch {
-          hosts => ["ec2-18-169-183-121.eu-west-2.compute.amazonaws.com:9200"]
-          index => "logstash-%{+YYYY.MM.dd}"
+        filter {
+          grok {
+            patterns_dir => "/etc/logstash/patterns"
+            match => { "message" => "%{NGINX_ACCESS}" }
+            remove_tag => ["_grokparsefailure"]
+            add_tag => ["nginx_access"]
+          }
+          mutate {
+            convert => ["response", "integer"]
+            convert => ["bytes", "integer"]
+            convert => ["responsetime", "float"]
         }
-      }
+          geoip {
+            source => "clientip"
+            add_tag => [ "nginx-geoip" ]
+        }
+          useragent {
+            source => "agent"
+        }
+
+        }
+
+        output {
+          elasticsearch {
+            hosts => ["ec2-3-9-117-225.eu-west-2.compute.amazonaws.com:9200"]
+            index => "logstash-%{+YYYY.MM.dd}"
+          }
+        stdout { codec => rubydebug }
+}
 
 
-
+- name: Creating a file with content
+  copy:
+    dest: /etc/logstash/patterns/nginx
+    content: |
+      %{IPORHOST:clientip} (?:-|(%{WORD}.%{WORD})) %{USER:ident} \[%{HTTPDATE:timestamp}\] "(?:%{WORD:verb} %{NOTSPACE:request}(?: HTTP/%{NUMBER:httpversion})?|%{DATA:rawrequest})" %{NUMBER:response} (?:%{NUMBER:bytes}|-)
 
 - name: Update filebeat config
   blockinfile:
@@ -55,5 +58,7 @@
 
       output.logstash:
         hosts: ["localhost:5044"]
+
+
 
 
