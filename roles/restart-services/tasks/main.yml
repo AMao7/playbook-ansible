@@ -10,7 +10,7 @@
     name: filebeat
     state: restarted
 
-- name: Restart elasticservice
+- name: Restart elasticsearch
   service:
     name: elasticsearch
     state: restarted
