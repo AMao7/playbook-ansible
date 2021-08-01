@@ -10,9 +10,9 @@
    name: kibana
    update_cache: yes
  
-# Configurations
+# Config
 
-- name: Updating the config file to allow outside access
+- name: Updating the config file to localhost
   lineinfile:
    destfile: /etc/kibana/kibana.yml
    regexp: 'server.host:'
